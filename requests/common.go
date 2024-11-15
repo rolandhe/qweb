@@ -2,6 +2,7 @@ package requests
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rolandhe/go-base/commons"
 )
 
@@ -18,7 +19,11 @@ func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	}
 
 	baseContext := commons.NewBaseContext()
-	baseContext.Put(commons.TraceId, getHeader(gctx, commons.TraceId))
+	tid := getHeader(gctx, commons.TraceId)
+	if tid == "" {
+		tid = uuid.NewString() + "-cr"
+	}
+	baseContext.Put(commons.TraceId, tid)
 	baseContext.Put(commons.Profile, getHeader(gctx, commons.Profile))
 	baseContext.Put(commons.Token, getToken(gctx))
 	baseContext.Put(commons.Platform, getHeader(gctx, commons.Platform))
