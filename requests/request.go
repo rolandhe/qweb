@@ -7,7 +7,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rolandhe/go-base/commons"
 	"github.com/rolandhe/go-base/logger"
-	"go/types"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -70,7 +69,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 
 		if ctx.QuickInfo().Uid == 0 {
 			logger.WithBaseContextInfof(ctx)("not login in")
-			gctx.AbortWithStatusJSON(http.StatusOK, commons.ErrResult[types.Nil](commons.NotLogin, "not login in"))
+			gctx.AbortWithStatusJSON(http.StatusOK, commons.ErrResult(commons.NotLogin, "not login in"))
 			return
 		}
 
