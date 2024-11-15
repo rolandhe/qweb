@@ -158,7 +158,8 @@ func beforeLog(gctx *gin.Context, baseCtx *commons.BaseContext, level LogLevel) 
 		if exists {
 			body = string(bodyBytes.([]byte))
 		}
-		logger.WithBaseContextInfof(baseCtx)("enter %s,uid=%d,body is %s", gctx.Request.URL.String(), uid, body)
+		keysContent := keysJson(gctx)
+		logger.WithBaseContextInfof(baseCtx)("enter %s,uid=%d,keyHeader=%s,body is %s", gctx.Request.URL.String(), uid, keysContent, body)
 		return
 	}
 	logger.WithBaseContextInfof(baseCtx)("enter %s,uid=%d", gctx.Request.URL.String(), uid)
@@ -201,4 +202,22 @@ func findCustomErrMsgs(tType reflect.Type, tName string, tPath string, errMsgs m
 			findCustomErrMsgs(fType, fName, tPath, errMsgs)
 		}
 	}
+}
+
+var keyHeaders = []string{
+	"device-id",
+	"hardware",
+	"os",
+	"os-version",
+	"app-version",
+}
+
+func keysJson(gctx *gin.Context) string {
+	km := map[string]string{}
+	for _, k := range keyHeaders {
+		v := getHeader(gctx, k)
+		km[k] = v
+	}
+	j, _ := json.Marshal(km)
+	return string(j)
 }
