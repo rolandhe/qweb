@@ -89,10 +89,10 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		reqObj := new(T)
 		if err := gctx.ShouldBind(reqObj); err != nil {
 			beforeLog(gctx, ctx, rd.LogLevel)
-			logger.WithBaseContextErrorf(ctx)("bind request object error: %v", err)
+
 			var errs validator.ValidationErrors
-			ok := errors.As(err, &errs)
-			if ok {
+			if ok := errors.As(err, &errs); ok {
+				logger.WithBaseContextErrorf(ctx)("valid error")
 				customErrMsgs := getCustomErrMsgs(reqObj)
 				var errMsgs []string
 				for _, e := range errs {
@@ -110,6 +110,8 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 				if msg != "" {
 					rt = commons.QuickErrResult(msg)
 				}
+			} else {
+				logger.WithBaseContextErrorf(ctx)("bind request object error: %v", err)
 			}
 			if rt == nil {
 				rt = commons.QuickErrResult("args invalid")
