@@ -11,7 +11,7 @@ func NewEngine() *gin.Engine {
 	}
 	e := gin.New()
 	e.UseH2C = true
-	e.MaxMultipartMemory = 8 << 20
+	e.MaxMultipartMemory = 2 << 20
 	e.Use(recoverHandler(), corsHandler(), monitorHandler(), healthHandler())
 	_ = e.SetTrustedProxies(nil)
 	e.HandleMethodNotAllowed = true
