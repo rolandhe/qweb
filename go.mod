@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.22.1
-	github.com/rolandhe/go-base v0.0.11
+	github.com/rolandhe/go-base v0.0.12
 )
 
 require (
