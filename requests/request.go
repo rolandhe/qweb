@@ -92,7 +92,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 
 			var errs validator.ValidationErrors
 			if ok := errors.As(err, &errs); ok {
-				logger.WithBaseContextErrorf(ctx)("valid error")
+				logger.WithBaseContextInfof(ctx)("valid error")
 				customErrMsgs := getCustomErrMsgs(reqObj)
 				var errMsgs []string
 				for _, e := range errs {
@@ -111,7 +111,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 					rt = commons.QuickErrResult(msg)
 				}
 			} else {
-				logger.WithBaseContextErrorf(ctx)("bind request object error: %v", err)
+				logger.WithBaseContextInfof(ctx)("bind request object error: %v", err)
 			}
 			if rt == nil {
 				rt = commons.QuickErrResult("args invalid")
