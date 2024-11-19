@@ -10,7 +10,8 @@ const (
 	baseContextName = "base_context_qweb"
 )
 
-var UserInfoProviderFunc func(ctx *commons.BaseContext, token string, platform string, info *commons.QuickInfo) error
+var UserInfoCheckFunc func(ctx *commons.BaseContext, token string, platform string, urlPath string, info *commons.QuickInfo) error
+var ShareCheckFunc func(ctx *commons.BaseContext, url string, queryParam map[string]string, info *commons.QuickInfo) error
 
 func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	v, exists := gctx.Get(baseContextName)
@@ -27,7 +28,7 @@ func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	baseContext.Put(commons.Profile, getHeader(gctx, commons.Profile))
 	baseContext.Put(commons.Token, getToken(gctx))
 	baseContext.Put(commons.Platform, getHeader(gctx, commons.Platform))
-	baseContext.Put(commons.ShareToken, getHeader(gctx, commons.ShareToken))
+	baseContext.Put(commons.ShareToken, getShareToken(gctx))
 	privateUid := getHeader(gctx, commons.PrivateUid)
 	if privateUid != "" {
 		baseContext.Put(commons.PrivateUid, privateUid)
@@ -41,6 +42,14 @@ func getToken(gctx *gin.Context) string {
 	token := getHeader(gctx, commons.Token)
 	if len(token) == 0 {
 		token = gctx.Query(commons.Token)
+	}
+	return token
+}
+
+func getShareToken(gctx *gin.Context) string {
+	token := getHeader(gctx, commons.ShareToken)
+	if len(token) == 0 {
+		token = gctx.Query(commons.ShareToken)
 	}
 	return token
 }
