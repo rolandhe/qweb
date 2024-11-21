@@ -10,8 +10,15 @@ const (
 	baseContextName = "base_context_qweb"
 )
 
-var UserInfoCheckFunc func(ctx *commons.BaseContext, token string, platform string, urlPath string, info *commons.QuickInfo) error
-var ShareCheckFunc func(ctx *commons.BaseContext, queryParam map[string]string, info *commons.QuickInfo) error
+var ApiUserInfoCheckFunc = func(ctx *commons.BaseContext, token string, platform string, urlPath string, info *commons.QuickInfo) error {
+	panic("请设置ApiUserInfoCheckFunc")
+}
+var ShareCheckFunc = func(ctx *commons.BaseContext, queryParam map[string]string, info *commons.QuickInfo) error {
+	panic("请设置ShareCheckFunc")
+}
+var PrivateUserInfoCheckFunc = func(ctx *commons.BaseContext, uid int64, info *commons.QuickInfo) error {
+	return nil
+}
 
 func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	v, exists := gctx.Get(baseContextName)

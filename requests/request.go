@@ -64,7 +64,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			}
 		} else if strings.Contains(url, "/api/") {
 			token := commons.GetToken(ctx)
-			err := UserInfoCheckFunc(ctx, token, ctx.Get(commons.Platform), gctx.Request.URL.Path, ctx.QuickInfo())
+			err := ApiUserInfoCheckFunc(ctx, token, commons.GetPlatform(ctx), gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
 				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
 				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("internal error"))
@@ -73,8 +73,17 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		} else if strings.Contains(url, "/private/") {
 			sUid := ctx.Get(commons.PrivateUid)
 			if sUid != "" {
-				uid, _ := strconv.ParseInt(sUid, 10, 64)
-				ctx.QuickInfo().Uid = uid
+				uid, err := strconv.ParseInt(sUid, 10, 64)
+				if err != nil {
+					logger.WithBaseContextInfof(ctx)("parse private uid failed: %v", err)
+					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("internal error"))
+					return
+				}
+				if err = PrivateUserInfoCheckFunc(ctx, uid, ctx.QuickInfo()); err != nil {
+					logger.WithBaseContextInfof(ctx)("get private user info failed: %v", err)
+					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("internal error"))
+					return
+				}
 			}
 		}
 
