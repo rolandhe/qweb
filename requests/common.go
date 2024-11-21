@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rolandhe/go-base/commons"
+	"strings"
 )
 
 const (
@@ -34,7 +35,7 @@ func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	baseContext := commons.NewBaseContext()
 	tid := getHeader(gctx, commons.TraceId)
 	if tid == "" {
-		tid = uuid.NewString() + "-cr"
+		tid = newTraceId()
 	}
 	baseContext.Put(commons.TraceId, tid)
 	baseContext.Put(commons.Profile, getHeader(gctx, commons.Profile))
@@ -48,6 +49,11 @@ func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 
 	gctx.Set(baseContextName, baseContext)
 	return baseContext
+}
+
+func newTraceId() string {
+	raw := uuid.NewString()
+	return strings.ReplaceAll(raw, "-", "") + "-cr"
 }
 
 func getToken(gctx *gin.Context) string {
