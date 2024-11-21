@@ -50,7 +50,12 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		ctx := genBaseContext(gctx)
 		url := gctx.Request.URL.Path
 
-		if isShare(gctx) {
+		if maybeShare(gctx) {
+			if gctx.Request.Method != "GET" {
+				logger.WithBaseContextInfof(ctx)("invalid share request, must be GET,but %s", gctx.Request.Method)
+				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("invalid request"))
+				return
+			}
 			queryParams := gctx.Request.URL.Query()
 			allParams := map[string]string{}
 			for k, v := range queryParams {
@@ -97,7 +102,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 	}
 }
 
-func isShare(gctx *gin.Context) bool {
+func maybeShare(gctx *gin.Context) bool {
 	url := gctx.Request.URL.Path
 	if strings.Contains(url, "/share/") {
 		return true
