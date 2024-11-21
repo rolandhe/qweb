@@ -64,7 +64,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			}
 		} else if strings.Contains(url, "/api/") {
 			token := commons.GetToken(ctx)
-			err := ApiUserInfoCheckFunc(ctx, token, commons.GetPlatform(ctx), gctx.Request.URL.Path, ctx.QuickInfo())
+			err := ApiUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
 				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
 				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("internal error"))
