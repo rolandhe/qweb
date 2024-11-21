@@ -11,7 +11,7 @@ const (
 )
 
 var UserInfoCheckFunc func(ctx *commons.BaseContext, token string, platform string, urlPath string, info *commons.QuickInfo) error
-var ShareCheckFunc func(ctx *commons.BaseContext, url string, queryParam map[string]string, info *commons.QuickInfo) error
+var ShareCheckFunc func(ctx *commons.BaseContext, queryParam map[string]string, info *commons.QuickInfo) error
 
 func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	v, exists := gctx.Get(baseContextName)

@@ -48,10 +48,21 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		}
 
 		ctx := genBaseContext(gctx)
-
 		url := gctx.Request.URL.Path
 
-		if strings.Contains(url, "/api/") {
+		if isShare(gctx) {
+			queryParams := gctx.Request.URL.Query()
+			allParams := map[string]string{}
+			for k, v := range queryParams {
+				allParams[k] = v[0]
+			}
+			var err error
+			if err = ShareCheckFunc(ctx, allParams, ctx.QuickInfo()); err != nil {
+				logger.WithBaseContextInfof(ctx)("check share token: %v", err)
+				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("invalid request"))
+				return
+			}
+		} else if strings.Contains(url, "/api/") {
 			token := commons.GetToken(ctx)
 			err := UserInfoCheckFunc(ctx, token, ctx.Get(commons.Platform), gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
@@ -65,18 +76,6 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 				uid, _ := strconv.ParseInt(sUid, 10, 64)
 				ctx.QuickInfo().Uid = uid
 			}
-		} else if strings.Contains(url, "/share/") {
-			queryParams := gctx.Request.URL.Query()
-			allParams := map[string]string{}
-			for k, v := range queryParams {
-				allParams[k] = v[0]
-			}
-			var err error
-			if err = ShareCheckFunc(ctx, gctx.Request.URL.Path, allParams, ctx.QuickInfo()); err != nil {
-				logger.WithBaseContextInfof(ctx)("check share token: %v", err)
-				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("invalid request"))
-				return
-			}
 		}
 
 		if ctx.QuickInfo().Uid == 0 {
@@ -87,6 +86,20 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 
 		gctx.Next()
 	}
+}
+
+func isShare(gctx *gin.Context) bool {
+	url := gctx.Request.URL.Path
+	if strings.Contains(url, "/share/") {
+		return true
+	}
+	if strings.Contains(url, "/api/") {
+		shareToken := gctx.Request.URL.Query().Get(commons.ShareToken)
+		if shareToken != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
