@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rolandhe/go-base/commons"
@@ -8,6 +9,10 @@ import (
 
 const (
 	baseContextName = "base_context_qweb"
+)
+
+var (
+	NotLoginError = errors.New("not login")
 )
 
 var ApiUserInfoCheckFunc = func(ctx *commons.BaseContext, token string, urlPath string, info *commons.QuickInfo) error {
