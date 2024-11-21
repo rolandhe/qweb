@@ -18,7 +18,6 @@ type BizFunc[T any, V any] func(ctx *commons.BaseContext, req *T) V
 
 type RequestDesc[T, V any] struct {
 	RelativePath  string
-	NonLogin      bool
 	AllowRoles    []string
 	AllowProducts []int
 	BizCoreFunc   BizFunc[T, V]
@@ -42,13 +41,13 @@ func buildHandlersChain[T any, V any](rd *RequestDesc[T, V]) gin.HandlersChain {
 
 func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 	return func(gctx *gin.Context) {
-		if rd.NonLogin {
+		ctx := genBaseContext(gctx)
+		url := gctx.Request.URL.Path
+
+		if strings.Contains(url, "/public/") {
 			gctx.Next()
 			return
 		}
-
-		ctx := genBaseContext(gctx)
-		url := gctx.Request.URL.Path
 
 		if maybeShare(gctx) {
 			if gctx.Request.Method != "GET" {
