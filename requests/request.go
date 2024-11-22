@@ -125,7 +125,13 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 
 		var rt any
 		reqObj := new(T)
-		if err := gctx.ShouldBind(reqObj); err != nil {
+
+		bindFunc := gctx.ShouldBind
+		if gctx.Request.Method == "GET" && gctx.ContentType() == "" {
+			bindFunc = gctx.ShouldBindQuery
+		}
+
+		if err := bindFunc(reqObj); err != nil {
 			beforeLog(gctx, ctx, rd.LogLevel)
 
 			var errs validator.ValidationErrors
