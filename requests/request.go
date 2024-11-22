@@ -7,7 +7,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rolandhe/go-base/commons"
 	"github.com/rolandhe/go-base/logger"
-	"go/types"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -64,7 +63,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			var err error
 			if err = ShareCheckFunc(ctx, allParams, ctx.QuickInfo()); err != nil {
 				logger.WithBaseContextInfof(ctx)("check share token: %v", err)
-				gctx.AbortWithStatusJSON(http.StatusOK, commons.FromError[types.Nil](err))
+				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 				return
 			}
 		} else if strings.Contains(url, "/api/") {
@@ -72,7 +71,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			err := ApiUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
 				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
-				gctx.AbortWithStatusJSON(http.StatusOK, commons.FromError[types.Nil](err))
+				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 				return
 			}
 		} else if strings.Contains(url, "/private/") {
@@ -81,12 +80,12 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 				uid, err := strconv.ParseInt(sUid, 10, 64)
 				if err != nil {
 					logger.WithBaseContextInfof(ctx)("parse private uid failed: %v", err)
-					gctx.AbortWithStatusJSON(http.StatusOK, commons.FromError[types.Nil](err))
+					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 					return
 				}
 				if err = PrivateUserInfoCheckFunc(ctx, uid, ctx.QuickInfo()); err != nil {
 					logger.WithBaseContextInfof(ctx)("get private user info failed: %v", err)
-					gctx.AbortWithStatusJSON(http.StatusOK, commons.FromError[types.Nil](err))
+					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 					return
 				}
 			}

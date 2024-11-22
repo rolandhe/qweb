@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/google/uuid v1.6.0
-	github.com/rolandhe/go-base v0.0.25
+	github.com/rolandhe/go-base v0.0.26
 )
 
 require (
