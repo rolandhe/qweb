@@ -181,7 +181,7 @@ func afterLog(baseCtx *commons.BaseContext, rt any, start time.Time, ll LogLevel
 		return
 	}
 
-	latency := time.Now().Sub(start)
+	latency := time.Now().Sub(start).Milliseconds()
 
 	uid := baseCtx.QuickInfo().Uid
 
