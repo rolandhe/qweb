@@ -139,7 +139,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		} else {
 			beforeLog(gctx, ctx, rd.LogLevel)
 			if maybeShare(ctx) {
-				if err = ShareCheckFunc(ctx, reqObj, ctx.QuickInfo()); err != nil {
+				if err = ShareCheckFunc(ctx, reqObj, gctx.Request.URL.Path, ctx.QuickInfo()); err != nil {
 					logger.WithBaseContextInfof(ctx)("check share token: %v", err)
 					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 					return
