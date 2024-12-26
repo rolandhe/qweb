@@ -19,7 +19,7 @@ var (
 var ApiUserInfoCheckFunc = func(ctx *commons.BaseContext, token string, urlPath string, info *commons.QuickInfo) error {
 	panic("请设置ApiUserInfoCheckFunc")
 }
-var ShareCheckFunc = func(ctx *commons.BaseContext, queryParam map[string]string, info *commons.QuickInfo) error {
+var ShareCheckFunc = func(ctx *commons.BaseContext, req any, info *commons.QuickInfo) error {
 	panic("请设置ShareCheckFunc")
 }
 var PrivateUserInfoCheckFunc = func(ctx *commons.BaseContext, uid int64, info *commons.QuickInfo) error {

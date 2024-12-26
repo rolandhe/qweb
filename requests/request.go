@@ -50,22 +50,24 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		}
 
 		if maybeShare(gctx) {
-			if gctx.Request.Method != "GET" {
-				logger.WithBaseContextInfof(ctx)("invalid share request, must be GET,but %s", gctx.Request.Method)
-				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("invalid request"))
-				return
-			}
-			queryParams := gctx.Request.URL.Query()
-			allParams := map[string]string{}
-			for k, v := range queryParams {
-				allParams[k] = v[0]
-			}
-			var err error
-			if err = ShareCheckFunc(ctx, allParams, ctx.QuickInfo()); err != nil {
-				logger.WithBaseContextInfof(ctx)("check share token: %v", err)
-				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
-				return
-			}
+			//if gctx.Request.Method != "GET" {
+			//	logger.WithBaseContextInfof(ctx)("invalid share request, must be GET,but %s", gctx.Request.Method)
+			//	gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickErrResult("invalid request"))
+			//	return
+			//}
+			//queryParams := gctx.Request.URL.Query()
+			//allParams := map[string]string{}
+			//for k, v := range queryParams {
+			//	allParams[k] = v[0]
+			//}
+			//var err error
+			//if err = ShareCheckFunc(ctx, allParams, ctx.QuickInfo()); err != nil {
+			//	logger.WithBaseContextInfof(ctx)("check share token: %v", err)
+			//	gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
+			//	return
+			//}
+			gctx.Next()
+			return
 		} else if strings.Contains(url, "/api/") {
 			token := commons.GetToken(ctx)
 			err := ApiUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
@@ -131,10 +133,8 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		if gctx.Request.Method == "GET" && gctx.ContentType() == "" {
 			bindFunc = gctx.ShouldBindQuery
 		}
-
 		if err := bindFunc(reqObj); err != nil {
 			beforeLog(gctx, ctx, rd.LogLevel)
-
 			var errs validator.ValidationErrors
 			if ok := errors.As(err, &errs); ok {
 				logger.WithBaseContextInfof(ctx)("valid error")
@@ -163,6 +163,13 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			}
 		} else {
 			beforeLog(gctx, ctx, rd.LogLevel)
+			if maybeShare(gctx) {
+				if err = ShareCheckFunc(ctx, reqObj, ctx.QuickInfo()); err != nil {
+					logger.WithBaseContextInfof(ctx)("check share token: %v", err)
+					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
+					return
+				}
+			}
 			rt = rd.BizCoreFunc(ctx, reqObj)
 		}
 
