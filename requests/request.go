@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/rolandhe/go-base/commons"
 	"github.com/rolandhe/go-base/logger"
@@ -103,11 +104,17 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		var rt any
 		reqObj := new(T)
 
-		bindFunc := gctx.ShouldBind
+		var bindFunc func(obj any) error
+
 		// GET方法支持直接的query string，也支持form data,但x-www-form-urlencoded有问题
 		if gctx.Request.Method == "GET" && gctx.ContentType() == "" {
 			bindFunc = gctx.ShouldBindQuery
+		} else {
+			bindFunc = func(obj any) error {
+				return gctx.ShouldBindBodyWith(obj, binding.JSON)
+			}
 		}
+
 		if err := bindFunc(reqObj); err != nil {
 			beforeLog(gctx, ctx, rd.LogLevel)
 			var errs validator.ValidationErrors
