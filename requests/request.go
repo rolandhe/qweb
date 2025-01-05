@@ -95,7 +95,7 @@ func maybeShare(ctx *commons.BaseContext) bool {
 
 func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 	return func(gctx *gin.Context) {
-		start := time.Now()
+		startUnixTs := time.Now().UnixMilli()
 
 		ctx := genBaseContext(gctx)
 
@@ -155,7 +155,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			rt = rd.BizCoreFunc(ctx, reqObj)
 		}
 
-		afterLog(ctx, rt, start, rd.LogLevel)
+		afterLog(ctx, rt, startUnixTs, rd.LogLevel)
 
 		if !gctx.Writer.Written() {
 			gctx.JSON(http.StatusOK, rt)
@@ -165,21 +165,21 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 	}
 }
 
-func afterLog(baseCtx *commons.BaseContext, rt any, start time.Time, ll LogLevel) {
+func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLevel) {
 	if ll == LOG_LEVEL_NONE {
 		return
 	}
 
-	latency := time.Now().Sub(start).Milliseconds()
+	latency := time.Now().UnixMilli() - startUnixTs
 
 	uid := baseCtx.QuickInfo().Uid
 
 	if ll&LOG_LEVEL_RETURN == LOG_LEVEL_RETURN {
 		retJson, _ := json.Marshal(rt)
-		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,ret is %s,cost=%d", uid, string(retJson), latency)
+		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,ret is %s,cost=%d ms", uid, string(retJson), latency)
 		return
 	}
-	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,cost=%d", uid, latency)
+	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,cost=%d ms", uid, latency)
 }
 
 func beforeLog(gctx *gin.Context, baseCtx *commons.BaseContext, level LogLevel) {
