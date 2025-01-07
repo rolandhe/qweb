@@ -107,7 +107,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		var bindFunc func(obj any) error
 
 		// GET方法支持直接的query string，也支持form data,但x-www-form-urlencoded有问题
-		if gctx.Request.Method == "GET" && gctx.ContentType() == "" {
+		if gctx.Request.Method == "GET" {
 			bindFunc = gctx.ShouldBindQuery
 		} else {
 			bindFunc = func(obj any) error {
