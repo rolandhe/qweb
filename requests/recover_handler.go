@@ -7,15 +7,21 @@ import (
 	"github.com/rolandhe/qweb/profile"
 	"go/types"
 	"net/http"
+	"strings"
 )
 
 func recoverHandler() gin.HandlerFunc {
-	return gin.CustomRecovery(myRecover)
+	return func(c *gin.Context) {
+		out := &strings.Builder{}
+		f := gin.RecoveryWithWriter(out, myRecover)
+		f(c)
+		baseCtx := genBaseContext(c)
+		logger.WithBaseContextErrorf(baseCtx)("panic stack: %s", out.String())
+	}
 }
 
 func myRecover(gctx *gin.Context, err any) {
 	baseCtx := genBaseContext(gctx)
-
 	logger.WithBaseContextErrorf(baseCtx)("panic error: %v", err)
 
 	gctx.JSON(http.StatusOK, errorToResult(err))
