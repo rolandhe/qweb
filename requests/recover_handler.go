@@ -15,8 +15,10 @@ func recoverHandler() gin.HandlerFunc {
 		out := &strings.Builder{}
 		f := gin.RecoveryWithWriter(out, myRecover)
 		f(c)
-		baseCtx := genBaseContext(c)
-		logger.WithBaseContextErrorf(baseCtx)("panic stack: %s", out.String())
+		if out.Len() > 0 {
+			baseCtx := genBaseContext(c)
+			logger.WithBaseContextErrorf(baseCtx)("panic stack: %s", out.String())
+		}
 	}
 }
 

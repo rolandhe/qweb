@@ -2,15 +2,12 @@ package requests
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rolandhe/go-base/envsupport"
 )
 
 const MaxMultipartMemory = 2 << 20
 
-func NewEngine() *gin.Engine {
-	if envsupport.Profile() == "prod" {
-		gin.SetMode(gin.ReleaseMode)
-	}
+func NewEngine(ginMode string) *gin.Engine {
+	gin.SetMode(ginMode)
 	e := gin.New()
 	e.UseH2C = true
 	e.MaxMultipartMemory = MaxMultipartMemory
