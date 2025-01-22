@@ -2,13 +2,13 @@ package requests
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rolandhe/qweb/profile"
+	"github.com/rolandhe/go-base/envsupport"
 )
 
 const MaxMultipartMemory = 2 << 20
 
 func NewEngine() *gin.Engine {
-	if profile.IsProd() {
+	if envsupport.Profile() == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	e := gin.New()

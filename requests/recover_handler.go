@@ -3,8 +3,8 @@ package requests
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rolandhe/go-base/commons"
+	"github.com/rolandhe/go-base/envsupport"
 	"github.com/rolandhe/go-base/logger"
-	"github.com/rolandhe/qweb/profile"
 	"go/types"
 	"net/http"
 	"strings"
@@ -35,7 +35,7 @@ func errorToResult(r any) any {
 	case *commons.StdError:
 		return commons.NewResult[*types.Nil](v.Code, v.Message, nil)
 	case error:
-		if profile.IsProd() {
+		if envsupport.Profile() == "prod" {
 			return commons.QuickErrResult("internal server error")
 		} else {
 			return commons.QuickErrResult(v.Error())
