@@ -53,15 +53,9 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		if maybeShare(ctx) {
 			gctx.Next()
 			return
-		} else if strings.Contains(url, "/api/") {
-			token := commons.GetToken(ctx)
-			err := ApiUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
-			if err != nil {
-				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
-				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
-				return
-			}
-		} else if strings.Contains(url, "/private/") {
+		}
+
+		if strings.Contains(url, "/private/") {
 			sUid := ctx.Get(commons.PrivateUid)
 			if sUid != "" {
 				uid, err := strconv.ParseInt(sUid, 10, 64)
@@ -75,6 +69,23 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 					return
 				}
+				if ctx.QuickInfo().Uid == 0 {
+					logger.WithBaseContextInfof(ctx)("not login in")
+					gctx.AbortWithStatusJSON(http.StatusOK, NotLoginError)
+					return
+				}
+			}
+			gctx.Next()
+			return
+		}
+
+		if strings.Contains(url, "/api/") {
+			token := commons.GetToken(ctx)
+			err := ApiUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
+			if err != nil {
+				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
+				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
+				return
 			}
 		}
 
