@@ -189,7 +189,7 @@ func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLev
 
 	if ll&LOG_LEVEL_RETURN == LOG_LEVEL_RETURN {
 		retJson, _ := json.Marshal(rt)
-		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,ret is %s,cost=%d ms", uid, string(retJson), latency)
+		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,ret is %s,cost=%d (%d) ms", uid, string(retJson), latency, bizCost)
 		return
 	}
 	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,cost=%d (%d) ms", uid, latency, bizCost)
