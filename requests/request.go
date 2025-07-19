@@ -181,7 +181,9 @@ func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLev
 		return
 	}
 
-	latency := time.Now().UnixMilli() - startUnixTs
+	endUnixTs := time.Now().UnixMilli()
+	latency := endUnixTs - baseCtx.GetCreateTime()
+	bizCost := endUnixTs - startUnixTs
 
 	uid := baseCtx.QuickInfo().Uid
 
@@ -190,7 +192,7 @@ func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLev
 		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,ret is %s,cost=%d ms", uid, string(retJson), latency)
 		return
 	}
-	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,cost=%d ms", uid, latency)
+	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,cost=%d (%d) ms", uid, latency, bizCost)
 }
 
 func beforeLog(gctx *gin.Context, baseCtx *commons.BaseContext, level LogLevel) {
