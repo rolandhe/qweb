@@ -25,6 +25,9 @@ var ShareCheckFunc = func(ctx *commons.BaseContext, req any, urlPath string, inf
 var PrivateUserInfoCheckFunc = func(ctx *commons.BaseContext, uid int64, info *commons.QuickInfo) error {
 	return nil
 }
+var PublicUserInfoCheckFunc = func(ctx *commons.BaseContext, token string, urlPath string, info *commons.QuickInfo) error {
+	return nil
+}
 
 func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	v, exists := gctx.Get(baseContextName)
