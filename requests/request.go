@@ -133,8 +133,10 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			}
 		}
 
+		llevel := RequestLevelFunc(ctx, gctx.Request.URL.Path, rd.LogLevel)
+
 		if err := bindFunc(reqObj); err != nil {
-			beforeLog(gctx, ctx, rd.LogLevel)
+			beforeLog(gctx, ctx, llevel)
 			var errs validator.ValidationErrors
 			if ok := errors.As(err, &errs); ok {
 				logger.WithBaseContextInfof(ctx)("valid error")
@@ -162,7 +164,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 				rt = commons.QuickErrResult("args invalid")
 			}
 		} else {
-			beforeLog(gctx, ctx, rd.LogLevel)
+			beforeLog(gctx, ctx, llevel)
 			if maybeShare(ctx) {
 				if err = ShareCheckFunc(ctx, reqObj, gctx.Request.URL.Path, ctx.QuickInfo()); err != nil {
 					logger.WithBaseContextInfof(ctx)("check share token: %v", err)
@@ -173,7 +175,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			rt = rd.BizCoreFunc(ctx, reqObj)
 		}
 
-		afterLog(ctx, rt, startUnixTs, rd.LogLevel)
+		afterLog(ctx, rt, startUnixTs, llevel)
 
 		if !gctx.Writer.Written() {
 			gctx.JSON(http.StatusOK, rt)
@@ -184,6 +186,12 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 }
 
 func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLevel) {
+	cr, ok := rt.(commons.CodedResult)
+	if ok {
+		if cr.GetCode() != commons.OKCode {
+			ll = LOG_LEVEL_RETURN
+		}
+	}
 	if ll == LOG_LEVEL_NONE {
 		return
 	}
