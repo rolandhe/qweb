@@ -47,18 +47,15 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 
 		if strings.Contains(url, "/public/") {
 			token := commons.GetToken(ctx)
-			if token == "" {
-				gctx.Next()
-				return
-			}
+
 			err := PublicUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
 				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
 				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 				return
 			}
-
-			if ctx.QuickInfo().Uid == 0 {
+			
+			if token != "" && ctx.QuickInfo().Uid == 0 {
 				gctx.Set("public_loss_token", "true")
 			}
 
