@@ -190,7 +190,9 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			}
 		}
 
-		afterLog(ctx, rt, startUnixTs, llevel)
+		press := gctx.GetHeader("X-Press")
+
+		afterLog(ctx, press, rt, startUnixTs, llevel)
 
 		if !gctx.Writer.Written() {
 			v, existed := gctx.Get("public_loss_token")
@@ -205,7 +207,7 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 	}
 }
 
-func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLevel) {
+func afterLog(baseCtx *commons.BaseContext, press string, rt any, startUnixTs int64, ll LogLevel) {
 	cr, ok := rt.(commons.CodedResult)
 	if ok {
 		if cr.GetCode() != commons.OKCode {
@@ -224,10 +226,10 @@ func afterLog(baseCtx *commons.BaseContext, rt any, startUnixTs int64, ll LogLev
 
 	if ll&LOG_LEVEL_RETURN == LOG_LEVEL_RETURN {
 		retJson, _ := json.Marshal(rt)
-		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,ret is %s,cost=%d (%d) ms", uid, string(retJson), latency, bizCost)
+		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,p=%s,ret is %s,cost=%d (%d) ms", uid, press, string(retJson), latency, bizCost)
 		return
 	}
-	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,cost=%d (%d) ms", uid, latency, bizCost)
+	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,p=%s,cost=%d (%d) ms", uid, press, latency, bizCost)
 }
 
 func beforeLog(gctx *gin.Context, baseCtx *commons.BaseContext, level LogLevel) {
