@@ -35,9 +35,26 @@ func Post[T, V any](gg *gin.RouterGroup, rd *RequestDesc[T, V]) {
 }
 
 func buildHandlersChain[T any, V any](rd *RequestDesc[T, V]) gin.HandlersChain {
-	handlersChain := []gin.HandlerFunc{loginHandler(rd), doBizFunc(rd)}
+	handlersChain := []gin.HandlerFunc{loginHandler(rd), buildLimitedBizFunc(doBizFunc(rd))}
 
 	return handlersChain
+}
+
+func buildLimitedBizFunc(hf gin.HandlerFunc) gin.HandlerFunc {
+	return func(gctx *gin.Context) {
+		bc := genBaseContext(gctx)
+		url := gctx.Request.URL.Path
+		err, cancelFunc := ConcurrentLimiterFunc(bc, url)
+		if cancelFunc != nil {
+			defer cancelFunc()
+		}
+		if err != nil {
+			gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
+			return
+		}
+		hf(gctx)
+		gctx.Next()
+	}
 }
 
 func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
@@ -54,7 +71,7 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 				return
 			}
-			
+
 			if token != "" && ctx.QuickInfo().Uid == 0 {
 				gctx.Set("public_loss_token", "true")
 			}

@@ -34,6 +34,10 @@ var RequestLevelFunc = func(ctx *commons.BaseContext, urlPath string, originalLe
 	return originalLevel
 }
 
+var ConcurrentLimiterFunc = func(ctx *commons.BaseContext, urlPath string) (error, func()) {
+	return nil, nil
+}
+
 func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	v, exists := gctx.Get(baseContextName)
 	if exists {
