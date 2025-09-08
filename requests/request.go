@@ -178,16 +178,9 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 					return
 				}
 			}
-			var cancelFunc func()
-			err, cancelFunc = ConcurrentLimiterFunc(ctx, gctx.Request.URL.Path)
-			if cancelFunc != nil {
-				defer cancelFunc()
-			}
-			if err == nil {
-				rt = rd.BizCoreFunc(ctx, reqObj)
-			} else {
-				rt = commons.QuickFromError(err)
-			}
+			rt = execBiz(ctx, gctx.Request.URL.Path, func() any {
+				return rd.BizCoreFunc(ctx, reqObj)
+			})
 		}
 
 		press := gctx.GetHeader("X-Press")
@@ -205,6 +198,17 @@ func doBizFunc[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 
 		gctx.Next()
 	}
+}
+
+func execBiz(bc *commons.BaseContext, uPath string, coreFunc func() any) any {
+	err, cancelFunc := ConcurrentLimiterFunc(bc, uPath)
+	if cancelFunc != nil {
+		defer cancelFunc()
+	}
+	if err != nil {
+		return commons.QuickFromError(err)
+	}
+	return coreFunc()
 }
 
 func afterLog(baseCtx *commons.BaseContext, press string, rt any, startUnixTs int64, ll LogLevel) {
