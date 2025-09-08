@@ -38,6 +38,10 @@ var ConcurrentLimiterFunc = func(ctx *commons.BaseContext, urlPath string) (erro
 	return nil, nil
 }
 
+var RateLimiterFunc = func(ctx *commons.BaseContext, uPath string) error {
+	return nil
+}
+
 func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	v, exists := gctx.Get(baseContextName)
 	if exists {

@@ -45,12 +45,21 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 		ctx := genBaseContext(gctx)
 		url := gctx.Request.URL.Path
 
+		if err := RateLimiterFunc(ctx, url); err != nil {
+			cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+			press := gctx.GetHeader("X-Press")
+			logger.WithBaseContextInfof(ctx)("Hit rate limit: %s,p=%s,cost=%d (%d) ms", url, press, cost, cost)
+			gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
+			return
+		}
+
 		if strings.Contains(url, "/public/") {
 			token := commons.GetToken(ctx)
 
 			err := PublicUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
-				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
+				cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+				logger.WithBaseContextInfof(ctx)("get user info failed: %v,cost=%d (%d) ms", err, cost, cost)
 				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 				return
 			}
@@ -73,17 +82,20 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			if sUid != "" {
 				uid, err := strconv.ParseInt(sUid, 10, 64)
 				if err != nil {
-					logger.WithBaseContextInfof(ctx)("parse private uid failed: %v", err)
+					cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+					logger.WithBaseContextInfof(ctx)("parse private uid failed: %v,cost=%d (%d) ms", err, cost, cost)
 					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 					return
 				}
 				if err = PrivateUserInfoCheckFunc(ctx, uid, ctx.QuickInfo()); err != nil {
-					logger.WithBaseContextInfof(ctx)("get private user info failed: %v", err)
+					cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+					logger.WithBaseContextInfof(ctx)("get private user info failed: %v,cost=%d (%d) ms", err, cost, cost)
 					gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 					return
 				}
 				if ctx.QuickInfo().Uid == 0 {
-					logger.WithBaseContextInfof(ctx)("not login in")
+					cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+					logger.WithBaseContextInfof(ctx)("not login in,cost=%d (%d) ms", cost, cost)
 					gctx.AbortWithStatusJSON(http.StatusOK, NotLoginError)
 					return
 				}
@@ -96,14 +108,16 @@ func loginHandler[T any, V any](rd *RequestDesc[T, V]) gin.HandlerFunc {
 			token := commons.GetToken(ctx)
 			err := ApiUserInfoCheckFunc(ctx, token, gctx.Request.URL.Path, ctx.QuickInfo())
 			if err != nil {
-				logger.WithBaseContextInfof(ctx)("get user info failed: %v", err)
+				cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+				logger.WithBaseContextInfof(ctx)("get user info failed: %v,cost=%d (%d) ms", err, cost, cost)
 				gctx.AbortWithStatusJSON(http.StatusOK, commons.QuickFromError(err))
 				return
 			}
 		}
 
 		if ctx.QuickInfo().Uid == 0 {
-			logger.WithBaseContextInfof(ctx)("not login in")
+			cost := time.Now().UnixMilli() - ctx.GetCreateTime()
+			logger.WithBaseContextInfof(ctx)("not login in,cost=%d (%d) ms", cost, cost)
 			gctx.AbortWithStatusJSON(http.StatusOK, NotLoginError)
 			return
 		}
