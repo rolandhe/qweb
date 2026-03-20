@@ -49,6 +49,10 @@ func genBaseContext(gctx *gin.Context) *commons.BaseContext {
 	}
 
 	baseContext := commons.NewBaseContext()
+	baseContext.RegisterKvExtendFunc(func(key string) any {
+		return gctx.GetHeader(key)
+	}, commons.KvExtendRegisterOverride)
+
 	tid := getHeader(gctx, commons.TraceId)
 	if tid == "" {
 		tid = newTraceId()
