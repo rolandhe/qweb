@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/rolandhe/go-base/commons"
+	"github.com/rolandhe/go-base/logger"
 	"strings"
 )
 
@@ -30,7 +31,7 @@ var PublicUserInfoCheckFunc = func(ctx *commons.BaseContext, token string, urlPa
 	return nil
 }
 
-var RequestLevelFunc = func(ctx *commons.BaseContext, urlPath string, originalLevel LogLevel) LogLevel {
+var RequestLevelFunc = func(ctx *commons.BaseContext, urlPath string, originalLevel logger.LogLevel) logger.LogLevel {
 	return originalLevel
 }
 

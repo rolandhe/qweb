@@ -22,7 +22,7 @@ type RequestDesc[T, V any] struct {
 	AllowRoles    []string
 	AllowProducts []int
 	BizCoreFunc   BizFunc[T, V]
-	LogLevel      LogLevel
+	LogLevel      logger.LogLevel
 	NotLogSQL     bool
 }
 
@@ -225,14 +225,14 @@ func execBiz(bc *commons.BaseContext, uPath string, coreFunc func() any) any {
 	return coreFunc()
 }
 
-func afterLog(baseCtx *commons.BaseContext, press string, rt any, startUnixTs int64, ll LogLevel) {
+func afterLog(baseCtx *commons.BaseContext, press string, rt any, startUnixTs int64, ll logger.LogLevel) {
 	cr, ok := rt.(commons.CodedResult)
 	if ok {
 		if cr.GetCode() != commons.OKCode {
-			ll = LOG_LEVEL_RETURN
+			ll = logger.LOG_LEVEL_RETURN
 		}
 	}
-	if ll == LOG_LEVEL_NONE {
+	if ll == logger.LOG_LEVEL_NONE {
 		return
 	}
 
@@ -242,7 +242,7 @@ func afterLog(baseCtx *commons.BaseContext, press string, rt any, startUnixTs in
 
 	uid := baseCtx.QuickInfo().Uid
 
-	if ll&LOG_LEVEL_RETURN == LOG_LEVEL_RETURN {
+	if ll&logger.LOG_LEVEL_RETURN == logger.LOG_LEVEL_RETURN {
 		retJson, _ := json.Marshal(rt)
 		logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,p=%s,ret is %s,cost=%d (%d) ms", uid, press, string(retJson), latency, bizCost)
 		return
@@ -250,12 +250,12 @@ func afterLog(baseCtx *commons.BaseContext, press string, rt any, startUnixTs in
 	logger.WithBaseContextInfof(baseCtx)("exit,uid=%d,p=%s,cost=%d (%d) ms", uid, press, latency, bizCost)
 }
 
-func beforeLog(gctx *gin.Context, baseCtx *commons.BaseContext, level LogLevel) {
-	if level == LOG_LEVEL_NONE {
+func beforeLog(gctx *gin.Context, baseCtx *commons.BaseContext, level logger.LogLevel) {
+	if level == logger.LOG_LEVEL_NONE {
 		return
 	}
 	uid := baseCtx.QuickInfo().Uid
-	if level&LOG_LEVEL_PARAM == LOG_LEVEL_PARAM {
+	if level&logger.LOG_LEVEL_PARAM == logger.LOG_LEVEL_PARAM {
 		bodyBytes, exists := gctx.Get(gin.BodyBytesKey)
 		body := ""
 		if exists {
